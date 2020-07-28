@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
-from pip.req import parse_requirements
+import re, ast
 
 version = '0.0.1'
-requirements = parse_requirements("requirements.txt", session="")
 
 with open('requirements.txt') as f:
 	install_requires = f.read().strip().split('\n')
