@@ -41,7 +41,17 @@ app_license = "MIT"
 
 # automatically create page for each record of this doctype
 # website_generators = ["Web Page"]
-
+fixtures = [
+    {
+        "doctype": "Custom Field",
+        "filters": [
+            ["name", "in", (
+               "Stock Entry-warranty_claim",
+"Material Request-warranty_claim","Delivery Note-warranty_claim", "Sales Invoice-warranty_claim","Warranty Claim-is_paid"
+            )]
+        ]
+    }
+]
 # Installation
 # ------------
 
