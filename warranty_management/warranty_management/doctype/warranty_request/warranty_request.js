@@ -349,7 +349,7 @@ cur_frm.cscript.setup_dashboard = function(doc) {
     }
     frappe.call({
         type: "GET",
-        method: "warranty_management.warranty_claim.get_warranty_details",
+        method: "warranty_management.warranty_management.warranty_claim.get_warranty_details",
         args: {
             warranty_claim: doc.warranty_claim
         },

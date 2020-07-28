@@ -1,6 +1,6 @@
 make_warranty_management_request = function() {
 	frappe.model.open_mapped_doc({
-		method: "warranty_management.warranty_claim.make_warranty_management_request",
+		method: "warranty_management.warranty_management.warranty_claim.make_warranty_management_request",
 		frm: cur_frm
 	})
 }
