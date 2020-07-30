@@ -47,7 +47,10 @@ fixtures = [
         "filters": [
             ["name", "in", (
                "Stock Entry-warranty_claim",
-"Material Request-warranty_claim","Delivery Note-warranty_claim", "Sales Invoice-warranty_claim","Warranty Claim-is_paid"
+                "Material Request-warranty_claim",
+                "Delivery Note-warranty_claim", 
+                "Sales Invoice-warranty_claim",
+                "Warranty Claim-is_paid"
             )]
         ]
     }
@@ -82,7 +85,7 @@ fixtures = [
 
 doc_events = {
     "Warranty Claim": {
-        "before_save": "warranty_management.warranty_claim.before_save",
+        "before_save": "warranty_management.warranty_management.warranty_claim.before_save",
     },
 }
 # doc_events = {

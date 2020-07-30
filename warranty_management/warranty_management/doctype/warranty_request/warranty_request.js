@@ -2,7 +2,7 @@
 // License: GNU General Public License v3. See license.txt
 
 
-confirm_receiving_item = function(frm) {
+var confirm_receiving_item = function(frm) {
     return cur_frm.call({
         freeze: true,
         doc: cur_frm.doc,
@@ -16,7 +16,7 @@ confirm_receiving_item = function(frm) {
 }
 
 
-start_testing_item = function(frm) {
+var start_testing_item = function(frm) {
     return cur_frm.call({
         freeze: true,
         doc: cur_frm.doc,
@@ -30,7 +30,7 @@ start_testing_item = function(frm) {
 }
 
 
-complete_testing_item = function(frm) {
+var complete_testing_item = function(frm) {
     var dialog = new frappe.ui.Dialog({
         title: __("Testing Results"),
         fields: [
@@ -66,7 +66,7 @@ complete_testing_item = function(frm) {
     dialog.fields_dict.accept_btn.$input.attr("style", "padding-top: 10px").addClass("btn btn-block btn-success").removeClass("btn-xs");
     dialog.fields_dict.reject_btn.$input.attr("style", "padding-top: 10px").addClass("btn btn-block btn-danger").removeClass("btn-xs");
     dialog.fields_dict.accept_btn.$input.click(function() {
-        args = dialog.get_values();
+        let args = dialog.get_values();
         if(!args) return;
         dialog.hide();
         frappe.call({
@@ -86,7 +86,7 @@ complete_testing_item = function(frm) {
     });
 
     dialog.fields_dict.reject_btn.$input.click(function() {
-        args = dialog.get_values();
+        let args = dialog.get_values();
         if(!args) return;
         dialog.hide();
         frappe.call({
@@ -109,7 +109,7 @@ complete_testing_item = function(frm) {
 }
 
 
-make_sales_order = function(frm) {
+var make_sales_order = function(frm) {
     frappe.model.open_mapped_doc({
         method: "warranty_management.warranty_management.doctype.warranty_request.warranty_request.make_sales_order",
         frm: cur_frm
@@ -117,7 +117,7 @@ make_sales_order = function(frm) {
 }
 
 
-make_stock_entry = function(frm) {
+var make_stock_entry = function(frm) {
     frappe.model.open_mapped_doc({
         method: "warranty_management.warranty_management.doctype.warranty_request.warranty_request.make_stock_entry",
         frm: cur_frm
@@ -125,7 +125,7 @@ make_stock_entry = function(frm) {
 }
 
 
-make_delivery_note = function(frm) {
+var make_delivery_note = function(frm) {
     frappe.model.open_mapped_doc({
         method: "warranty_management.warranty_management.doctype.warranty_request.warranty_request.make_delivery_note",
         frm: cur_frm
@@ -133,12 +133,12 @@ make_delivery_note = function(frm) {
 }
 
 
-make_sales_invoice = function(frm) {
+var make_sales_invoice = function(frm) {
 
 }
 
 
-make_material_request = function(frm) {
+var make_material_request = function(frm) {
     frappe.call({
         args: {
             frm: cur_frm
@@ -162,7 +162,7 @@ make_material_request = function(frm) {
 
 
 
-start_repairing_item = function(frm) {
+var start_repairing_item = function(frm) {
     var dialog = new frappe.ui.Dialog({
         title: __("Repairing Task"),
         fields: [
@@ -214,7 +214,7 @@ start_repairing_item = function(frm) {
     dialog.fields_dict.repair_btn.$input.attr("style", "padding-top: 10px").addClass("btn btn-block btn-success").removeClass("btn-xs");
     dialog.fields_dict.replace_btn.$input.attr("style", "padding-top: 10px").addClass("btn btn-block btn-danger").removeClass("btn-xs");
     dialog.fields_dict.repair_btn.$input.click(function() {
-        args = dialog.get_values();
+        let args = dialog.get_values();
         if(!args) return;
         dialog.hide();
         return cur_frm.call({
@@ -230,7 +230,7 @@ start_repairing_item = function(frm) {
     });
 
     dialog.fields_dict.replace_btn.$input.click(function() {
-        args = dialog.get_values();
+        let args = dialog.get_values();
         if(!args) return;
         dialog.hide();
         frappe.call({
@@ -256,7 +256,7 @@ start_repairing_item = function(frm) {
 }
 
 
-complete_repairing_item = function(frm) {
+var complete_repairing_item = function(frm) {
     var dialog = new frappe.ui.Dialog({
         title: __("Repairing Results"),
         fields: [
@@ -267,7 +267,7 @@ complete_repairing_item = function(frm) {
     });
     dialog.fields_dict.accept_btn.$input.attr("style", "padding-top: 10px").addClass("btn btn-block btn-success");
     dialog.fields_dict.accept_btn.$input.click(function() {
-        args = dialog.get_values();
+        let args = dialog.get_values();
         if(!args) return;
         dialog.hide();
         frappe.call({

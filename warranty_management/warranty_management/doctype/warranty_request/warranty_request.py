@@ -186,12 +186,13 @@ def make_delivery_note(source_name, target_doc=None):
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
     def set_missing_values(source, target):
-        target.purpose = "Material Receipt"
+        target.stock_entry_type = "Material Receipt"
 
     def update_item(source, target, source_parent):
         target.qty = 1
         target.uom = source.stock_uom
         target.stock_uom = source.stock_uom
+        # target.stock_entry_type = "Material Issue"
 
     target_doc = get_mapped_doc("Warranty Request", source_name, {
         "Warranty Request": {
