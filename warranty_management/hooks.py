@@ -87,6 +87,9 @@ doc_events = {
     "Warranty Claim": {
         "before_save": "warranty_management.warranty_management.warranty_claim.before_save",
     },
+     "Material Request": {
+    	"on_submit":"warranty_management.warranty_management.doctype.material_request.update_material.update_warranty_parts",
+  },
 }
 # doc_events = {
 #   "*": {
@@ -124,6 +127,10 @@ scheduler_events = {
 
 # Overriding Whitelisted Methods
 # ------------------------------
+override_whitelisted_methods = {
+	"erpnext.stock.doctype.material_request.material_request.make_stock_entry": "warranty_management.warranty_management.doctype.material_request.material_request.make_stock_entry",
+}
+
 #
 # override_whitelisted_methods = {
 #   "frappe.desk.doctype.event.event.get_events": "warranty_management.event.get_events"

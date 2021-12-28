@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 from frappe.model.mapper import get_mapped_doc
 from frappe import _
-
+from datetime import datetime, timedelta
 from frappe.utils import now_datetime
 from frappe.model.document import Document
 import frappe
@@ -14,21 +14,63 @@ import frappe
 class WarrantyRequest(Document):
 
     def after_insert(self):
-        pass
-        # receiving_item_wr = frappe.db.get_all("Warranty Request", fields="name", filters={"status": "Start Receiving"})
-        # msg = _("This Warranty Request receive item {0}").format(comma_and(receiving_item_wr))
+       pass       
 
     def before_insert(self):
         if self.warranty_claim:
             update_status("Warranty Claim", self.warranty_claim, "Start Receiving")
 
     def before_submit(self):
-        update_status(self.doctype, self.name, "Closed")
-        if self.warranty_claim:
-            self.update_customer_issue()
-        dn = make_delivery_note(self.name)
-        dn.insert()
-        frappe.msgprint("Delivery Note %s was created automatically" % dn.name)
+        if self.warranty_amc_status == 'Out of Warranty':
+            sales = frappe.new_doc("Sales Invoice")
+            if self.warranty_request_purposes:  
+                                for i in self.warranty_request_purposes:           
+                                    sales.append("items",{
+                                        'item_code':i.item_code,
+                                        'qty':'1',
+                                        'uom':i.stock_uom,
+                                             
+
+                                    })
+                                sales.customer = self.customer
+                                sales.due_date = self.complaint_date
+                                sales.warranty_claim = self.warranty_claim
+                                sales.flags.ignore_permissions  = True
+                                sales.save()   
+        elif self.status == 'Testing Completed' and self.to_warehouse == "Scrap - M":
+            scrap = frappe.new_doc("Scrap Warehouse")
+            if self.warranty_request_purposes:
+                    for i in self.warranty_request_purposes:           
+                                    scrap.append("scrap_item",{
+                                        'item_name':i.item_name,
+                                        'qty':'1',
+                                        'amount':'0',
+                                        'serial_no':i.serial_no
+                                    })
+                                    scrap.customer = self.customer
+                                    scrap.warranty_no = self.name
+                                    scrap.flags.ignore_permissions  = True
+                                    scrap.save()
+        elif self.status == 'Repairing Completed' and self.to_warehouse == "Scrap - M":
+            scrap = frappe.new_doc("Scrap Warehouse")
+            if self.material_request_part:
+                    for i in self.material_request_part:           
+                                    scrap.append("scrap_item",{
+                                        'item_name':i.item_name,
+                                        'qty':i.qty,
+                                        'serial_no':self.serial_no
+                                    })
+                                    scrap.customer = self.customer
+                                    scrap.warranty_no = self.name
+                                    scrap.flags.ignore_permissions  = True
+                                    scrap.save()   
+        # else:
+        #     update_status(self.doctype, self.name, "Closed")
+        #     if self.warranty_claim:
+        #         self.update_customer_issue()
+        #     dn = make_delivery_note(self.name)
+        #     dn.insert()
+        #     frappe.msgprint("Delivery Note %s was created automatically" % dn.name)
 
     def update_customer_issue(self):
         for d in self.get("warranty_request_purposes"):
@@ -85,6 +127,8 @@ class WarrantyRequest(Document):
         if not getattr(self, "_doc", None):
             self._doc = frappe.get_doc(self.doctype, self.name)
         return self._doc
+
+    
 
 
 @frappe.whitelist()
@@ -216,22 +260,41 @@ def make_stock_entry(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_material_request(source_name, target_doc=None):
-    def postprocess(source, doc):
-        doc.material_request_type = "Purchase"
 
-    doc = get_mapped_doc("Warranty Request", source_name, {
+    # def set_missing_values(source, target_doc):
+    #     target_doc.schedule_date = datetime.now()
+
+    def postprocess(source, doc):
+        doc.material_request_type = "Material Issue"
+        doc.warranty_request_name = source_name
+        
+    def update_item(source_doc, target_doc, source_parent):
+        target_doc.price_list_rate = 0
+        target_doc.rate = 0 
+        # target_doc.schedule_date = datetime.now()
+
+
+    target_doc = get_mapped_doc("Warranty Request", source_name, {
         "Warranty Request": {
             "doctype": "Material Request",
             "validation": {
-                "is_repairing_started": ["=", 1]
-            },
+                "status": ["=", 'Testing Completed']
+                },
+        },        
+        "Material Request Part": {
+            "doctype": "Material Request Item",
             "field_map": {
-                "warranty_claim": "warranty_claim"
+                
             },
+            "postprocess": update_item,
         },
+        "field_map": {
+            "warranty_claim": "warranty_claim"
+        },
+        
     }, target_doc, postprocess)
 
-    return doc
+    return target_doc
 
 
 @frappe.whitelist()
@@ -253,10 +316,50 @@ def make_sales_order(source_name, target_doc=None):
         "Warranty Request": {
             "doctype": "Sales Order",
             "validation": {
-            }
+            },
         },
         "Warranty Request Purposes": {
             "doctype": "Sales Order Item",
+            "field_map": {
+            },
+            "postprocess": update_item,
+        },
+        "Sales Taxes and Charges": {
+            "doctype": "Sales Taxes and Charges",
+            "add_if_empty": True
+        },
+        "Sales Team": {
+            "doctype": "Sales Team",
+            "add_if_empty": True
+        }
+    }, target_doc, set_missing_values, ignore_permissions=1)
+
+    return target_doc
+#sales invoice function
+@frappe.whitelist()
+def make_sales_invoices(source_name, target_doc=None):
+    def set_missing_values(source, target):
+        target.customer = source.customer
+        target.customer_name = source.customer_name
+        target.ignore_pricing_rule = 1
+        target.flags.ignore_permissions = 1
+        target.run_method("set_missing_values")
+        target.run_method("calculate_taxes_and_totals")
+
+    def update_item(source_doc, target_doc, source_parent):
+        target_doc.price_list_rate = 0
+        target_doc.rate = 0
+        target_doc.qty = 1
+
+    target_doc = get_mapped_doc("Warranty Request", source_name, {
+        "Warranty Request": {
+            "doctype": "Sales Invoice",
+            "validation": {
+                "status": ["=", 'Repairing Completed']
+            },
+        },
+        "Warranty Request Purposes": {
+            "doctype": "Sales Invoice Item",
             "field_map": {
             },
             "postprocess": update_item,
@@ -325,3 +428,6 @@ def make_sales_invoice_main(source_name, target_doc=None):
     }, target_doc, postprocess, ignore_permissions=1)
 
     return target_doc
+   
+
+    
