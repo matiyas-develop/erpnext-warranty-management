@@ -37,7 +37,7 @@ class WarrantyRequest(Document):
                                 sales.warranty_claim = self.warranty_claim
                                 sales.flags.ignore_permissions  = True
                                 sales.save()   
-        elif self.status == 'Testing Completed' and self.to_warehouse == "Scrap - M":
+        elif self.status == 'Testing Completed' and self.to_warehouse == "Scrap - MS":
             scrap = frappe.new_doc("Scrap Warehouse")
             if self.warranty_request_purposes:
                     for i in self.warranty_request_purposes:           
@@ -51,7 +51,7 @@ class WarrantyRequest(Document):
                                     scrap.warranty_no = self.name
                                     scrap.flags.ignore_permissions  = True
                                     scrap.save()
-        elif self.status == 'Repairing Completed' and self.to_warehouse == "Scrap - M":
+        elif self.status == 'Repairing Completed' and self.to_warehouse == "Scrap - MS":
             scrap = frappe.new_doc("Scrap Warehouse")
             if self.material_request_part:
                     for i in self.material_request_part:           
